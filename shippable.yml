@@ -3,7 +3,8 @@ language: node_js
 
 # Version number
 node_js:
-  - 0.12
+  - 0.10
+  - 0.11
 
 env:
   global:
@@ -11,28 +12,30 @@ env:
 
   matrix:
     - M1=ONE
+    - M2=two
 
 build:
-  pre_ci:
-    - docker build -t=shippabledocker/sample_node .
-
+  
   pre_ci_boot:
-    image_name: shippabledocker/sample_node
+    image_name: shippable/minv2
     image_tag: latest
-    pull: false
+    pull: true
     options: '--privileged=true --net=bridge -e FOO=true -e BOO=false'
 
   ci:
-    - ps -eax
-    - ls -al
-
-  post_ci:
-    - docker push shippabledocker/sample_node
-
-integrations:
-  hub:
-    - integrationName: ship-docker
-      type: docker
-      branches:
-        only:
-          - master
+    ci:
+    - echo "Hello, World!"
+    - env
+    - echo $PATH
+    - reports --help
+    - node --version
+    - mkdir -p shippable/testresults
+    - mkdir -p shippable/codecoverage
+    - npm install
+    - ./node_modules/.bin/istanbul cover grunt -- -u tdd
+    - ./node_modules/.bin/istanbul report cobertura --dir  shippable/codecoverage/
+    - cat shippable/codecoverage/cobertura-coverage.xml
+    - export XUNIT_FILE=shippable/testresults/result.xml
+    - grunt
+ 
+ 
